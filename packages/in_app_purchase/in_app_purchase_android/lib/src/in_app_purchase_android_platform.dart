@@ -142,9 +142,17 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
   @override
   Future<bool> buyNonConsumable({required PurchaseParam purchaseParam}) async {
     ChangeSubscriptionParam? changeSubscriptionParam;
+    /// An obfuscated ID for the user, used as `obfuscatedProfileId` in `launchBillingFlow`.
+    /// Helps in preventing fraudulent transactions.
+    /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+    String? obfuscatedProfileId;
 
     if (purchaseParam is GooglePlayPurchaseParam) {
       changeSubscriptionParam = purchaseParam.changeSubscriptionParam;
+      /// An obfuscated ID for the user, used as `obfuscatedProfileId` in `launchBillingFlow`.
+      /// Helps in preventing fraudulent transactions.
+      /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+      obfuscatedProfileId = purchaseParam.profileId;
     }
 
     String? offerToken;
@@ -159,6 +167,10 @@ class InAppPurchaseAndroidPlatform extends InAppPurchasePlatform {
           product: purchaseParam.productDetails.id,
           offerToken: offerToken,
           accountId: purchaseParam.applicationUserName,
+          // An obfuscated ID for the user, used as `obfuscatedProfileId` in `launchBillingFlow`.
+          // Helps in preventing fraudulent transactions.
+          // Added in this fork from version 3.2.0 of `in_app_purchase`.
+          obfuscatedProfileId: obfuscatedProfileId,
           oldProduct: changeSubscriptionParam?.oldPurchaseDetails.productID,
           purchaseToken: changeSubscriptionParam
               ?.oldPurchaseDetails.verificationData.serverVerificationData,

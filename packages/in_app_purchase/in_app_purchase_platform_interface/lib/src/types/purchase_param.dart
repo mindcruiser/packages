@@ -10,6 +10,7 @@ class PurchaseParam {
   PurchaseParam({
     required this.productDetails,
     this.applicationUserName,
+    this.profileId,
   });
 
   /// The product to create payment for.
