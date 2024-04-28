@@ -39,7 +39,7 @@ class InAppPurchaseStoreKitPlatform extends InAppPurchasePlatform {
   /// Triggered when a user initiates an in-app purchase from App Store.
   ///
   /// Added in this fork from version 3.2.0 of `in_app_purchase`.
-  Stream<SKPaymentWrapper> get shouldAddStorePaymentStream =>
+  static Stream<SKPaymentWrapper> get shouldAddStorePaymentStream =>
       _observer.shouldAddStorePaymentController.stream;
 
   /// Callback handler for transaction status changes.
