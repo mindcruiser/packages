@@ -13,6 +13,7 @@ class GooglePlayPurchaseParam extends PurchaseParam {
     required super.productDetails,
     super.applicationUserName,
     this.changeSubscriptionParam,
+    super.profileId,
   });
 
   /// The 'changeSubscriptionParam' containing information for upgrading or

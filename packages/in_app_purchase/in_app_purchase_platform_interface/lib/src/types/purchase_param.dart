@@ -24,4 +24,9 @@ class PurchaseParam {
   /// user's Google ID for this field.
   /// For example, you can use a one-way hash of the user’s account name on your server.
   final String? applicationUserName;
+
+  /// An obfuscated ID for the user, used as `obfuscatedProfileId` in `launchBillingFlow`.
+  /// Helps in preventing fraudulent transactions.
+  /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+  final String? profileId;
 }
