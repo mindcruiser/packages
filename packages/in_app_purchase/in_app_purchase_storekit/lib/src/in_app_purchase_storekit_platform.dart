@@ -36,6 +36,12 @@ class InAppPurchaseStoreKitPlatform extends InAppPurchasePlatform {
   Stream<List<PurchaseDetails>> get purchaseStream =>
       _observer.purchaseUpdatedController.stream;
 
+  /// Triggered when a user initiates an in-app purchase from App Store.
+  ///
+  /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+  Stream<SKPaymentWrapper> get shouldAddStorePaymentStream =>
+      _observer.shouldAddStorePaymentController.stream;
+
   /// Callback handler for transaction status changes.
   @visibleForTesting
   static SKTransactionObserverWrapper get observer => _observer;
@@ -60,7 +66,11 @@ class InAppPurchaseStoreKitPlatform extends InAppPurchasePlatform {
       onListen: () => _skPaymentQueueWrapper.startObservingTransactionQueue(),
       onCancel: () => _skPaymentQueueWrapper.stopObservingTransactionQueue(),
     );
-    _observer = _TransactionObserver(updateController);
+    /// Triggered when a user initiates an in-app purchase from App Store.
+    ///
+    /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+    final shouldAddStorePaymentController = StreamController<SKPaymentWrapper>.broadcast();
+    _observer = _TransactionObserver(updateController, shouldAddStorePaymentController);
     _skPaymentQueueWrapper.setTransactionObserver(observer);
   }
 
@@ -170,9 +180,13 @@ enum _TransactionRestoreState {
 }
 
 class _TransactionObserver implements SKTransactionObserverWrapper {
-  _TransactionObserver(this.purchaseUpdatedController);
+  _TransactionObserver(this.purchaseUpdatedController, this.shouldAddStorePaymentController);
 
   final StreamController<List<PurchaseDetails>> purchaseUpdatedController;
+  /// Triggered when a user initiates an in-app purchase from App Store.
+  ///
+  /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+  final StreamController<SKPaymentWrapper> shouldAddStorePaymentController;
 
   Completer<void>? _restoreCompleter;
   late String _receiptData;
@@ -228,6 +242,11 @@ class _TransactionObserver implements SKTransactionObserverWrapper {
   @override
   bool shouldAddStorePayment(
       {required SKPaymentWrapper payment, required SKProductWrapper product}) {
+    /// Triggered when a user initiates an in-app purchase from App Store.
+    ///
+    /// Added in this fork from version 3.2.0 of `in_app_purchase`.
+    shouldAddStorePaymentController.add(payment);
+
     // In this unified API, we always return true to keep it consistent with the behavior on Google Play.
     return true;
   }
