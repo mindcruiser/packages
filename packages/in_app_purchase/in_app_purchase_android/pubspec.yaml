@@ -25,7 +25,7 @@ dependencies:
     git:
       url: https://github.com/mindcruiser/packages.git
       path: packages/in_app_purchase/in_app_purchase_platform_interface
-      ref: notta_fork_v3.2.3
+      ref: v1.4.0-in_app_purchase_platform_interface
   json_annotation: ^4.8.0
 
 dev_dependencies:

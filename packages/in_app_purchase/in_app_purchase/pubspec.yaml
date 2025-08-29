@@ -26,19 +26,19 @@ dependencies:
     git:
       url: https://github.com/mindcruiser/packages.git
       path: packages/in_app_purchase/in_app_purchase_android
-      ref: notta_fork_v3.2.3
+      ref: v0.4.0+1-in_app_purchase_android
 #  in_app_purchase_platform_interface: ^1.4.0
   in_app_purchase_platform_interface:
     git:
       url: https://github.com/mindcruiser/packages.git
       path: packages/in_app_purchase/in_app_purchase_platform_interface
-      ref: notta_fork_v3.2.3
+      ref: v1.4.0-in_app_purchase_platform_interface
 #  in_app_purchase_storekit: ^0.3.14
   in_app_purchase_storekit:
     git:
       url: https://github.com/mindcruiser/packages.git
       path: packages/in_app_purchase/in_app_purchase_storekit
-      ref: notta_fork_v3.2.3
+      ref: v0.4.0-in_app_purchase_storekit
 
 dev_dependencies:
   flutter_test:
