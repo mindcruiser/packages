@@ -16,12 +16,23 @@ const String kInvalidBillingResultErrorMessage =
 /// Params containing the response code and the debug message from the Play Billing API response.
 @immutable
 class BillingResultWrapper implements HasBillingResponse {
-  /// Constructs the object with [responseCode] and [debugMessage].
-  const BillingResultWrapper({required this.responseCode, this.debugMessage});
+  /// Constructs the object with [responseCode], [subResponseCode], and
+  /// [debugMessage].
+  const BillingResultWrapper({
+    required this.responseCode,
+    this.subResponseCode = 0,
+    this.debugMessage,
+  });
 
   /// Response code returned in the Play Billing API calls.
   @override
   final BillingResponse responseCode;
+
+  /// Sub-response code returned by the Play Billing API.
+  ///
+  /// Possible values are `0` when no more specific response code applies, `1`
+  /// for insufficient funds, and `2` when the user is ineligible.
+  final int subResponseCode;
 
   /// Debug message returned in the Play Billing API calls.
   ///
@@ -39,9 +50,10 @@ class BillingResultWrapper implements HasBillingResponse {
 
     return other is BillingResultWrapper &&
         other.responseCode == responseCode &&
+        other.subResponseCode == subResponseCode &&
         other.debugMessage == debugMessage;
   }
 
   @override
-  int get hashCode => Object.hash(responseCode, debugMessage);
+  int get hashCode => Object.hash(responseCode, subResponseCode, debugMessage);
 }

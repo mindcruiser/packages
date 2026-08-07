@@ -15,8 +15,8 @@ import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchaseHistoryRecord;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.UnfetchedProduct;
 import com.android.billingclient.api.UserChoiceDetails;
 import io.flutter.plugins.inapppurchase.Messages.FlutterError;
 import io.flutter.plugins.inapppurchase.Messages.PlatformAccountIdentifiers;
@@ -31,7 +31,6 @@ import io.flutter.plugins.inapppurchase.Messages.PlatformPricingPhase;
 import io.flutter.plugins.inapppurchase.Messages.PlatformProductDetails;
 import io.flutter.plugins.inapppurchase.Messages.PlatformProductType;
 import io.flutter.plugins.inapppurchase.Messages.PlatformPurchase;
-import io.flutter.plugins.inapppurchase.Messages.PlatformPurchaseHistoryRecord;
 import io.flutter.plugins.inapppurchase.Messages.PlatformPurchaseState;
 import io.flutter.plugins.inapppurchase.Messages.PlatformQueryProduct;
 import io.flutter.plugins.inapppurchase.Messages.PlatformRecurrenceMode;
@@ -39,6 +38,7 @@ import io.flutter.plugins.inapppurchase.Messages.PlatformReplacementMode;
 import io.flutter.plugins.inapppurchase.Messages.PlatformSubscriptionOfferDetails;
 import io.flutter.plugins.inapppurchase.Messages.PlatformUserChoiceDetails;
 import io.flutter.plugins.inapppurchase.Messages.PlatformUserChoiceProduct;
+import io.flutter.plugins.inapppurchase.Messages.PlatformUnfetchedProduct;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Currency;
@@ -59,6 +59,8 @@ import java.util.Locale;
         .setName(detail.getName())
         .setOneTimePurchaseOfferDetails(
             fromOneTimePurchaseOfferDetails(detail.getOneTimePurchaseOfferDetails()))
+        .setOneTimePurchaseOfferDetailsList(
+            fromOneTimePurchaseOfferDetailsList(detail.getOneTimePurchaseOfferDetailsList()))
         .setSubscriptionOfferDetails(
             fromSubscriptionOfferDetailsList(detail.getSubscriptionOfferDetails()))
         .build();
@@ -127,6 +129,20 @@ import java.util.Locale;
         .setPriceCurrencyCode(oneTimePurchaseOfferDetails.getPriceCurrencyCode())
         .setFormattedPrice(oneTimePurchaseOfferDetails.getFormattedPrice())
         .build();
+  }
+
+  static @Nullable List<PlatformOneTimePurchaseOfferDetails>
+      fromOneTimePurchaseOfferDetailsList(
+          @Nullable List<ProductDetails.OneTimePurchaseOfferDetails> offerDetailsList) {
+    if (offerDetailsList == null) {
+      return null;
+    }
+
+    List<PlatformOneTimePurchaseOfferDetails> output = new ArrayList<>();
+    for (ProductDetails.OneTimePurchaseOfferDetails offerDetails : offerDetailsList) {
+      output.add(fromOneTimePurchaseOfferDetails(offerDetails));
+    }
+    return output;
   }
 
   static @Nullable List<PlatformSubscriptionOfferDetails> fromSubscriptionOfferDetailsList(
@@ -260,19 +276,6 @@ import java.util.Locale;
         .build();
   }
 
-  static @NonNull PlatformPurchaseHistoryRecord fromPurchaseHistoryRecord(
-      @NonNull PurchaseHistoryRecord purchaseHistoryRecord) {
-    return new PlatformPurchaseHistoryRecord.Builder()
-        .setPurchaseTime(purchaseHistoryRecord.getPurchaseTime())
-        .setPurchaseToken(purchaseHistoryRecord.getPurchaseToken())
-        .setSignature(purchaseHistoryRecord.getSignature())
-        .setProducts(purchaseHistoryRecord.getProducts())
-        .setDeveloperPayload(purchaseHistoryRecord.getDeveloperPayload())
-        .setOriginalJson(purchaseHistoryRecord.getOriginalJson())
-        .setQuantity((long) purchaseHistoryRecord.getQuantity())
-        .build();
-  }
-
   static @NonNull List<PlatformPurchase> fromPurchasesList(@Nullable List<Purchase> purchases) {
     if (purchases == null) {
       return Collections.emptyList();
@@ -285,22 +288,22 @@ import java.util.Locale;
     return serialized;
   }
 
-  static @NonNull List<PlatformPurchaseHistoryRecord> fromPurchaseHistoryRecordList(
-      @Nullable List<PurchaseHistoryRecord> purchaseHistoryRecords) {
-    if (purchaseHistoryRecords == null) {
-      return Collections.emptyList();
+  static @NonNull List<PlatformUnfetchedProduct> fromUnfetchedProductList(
+      @NonNull List<UnfetchedProduct> unfetchedProducts) {
+    List<PlatformUnfetchedProduct> output = new ArrayList<>();
+    for (UnfetchedProduct unfetchedProduct : unfetchedProducts) {
+      output.add(
+          new PlatformUnfetchedProduct.Builder()
+              .setProductId(unfetchedProduct.getProductId())
+              .build());
     }
-
-    List<PlatformPurchaseHistoryRecord> serialized = new ArrayList<>();
-    for (PurchaseHistoryRecord purchaseHistoryRecord : purchaseHistoryRecords) {
-      serialized.add(fromPurchaseHistoryRecord(purchaseHistoryRecord));
-    }
-    return serialized;
+    return output;
   }
 
   static @NonNull PlatformBillingResult fromBillingResult(@NonNull BillingResult billingResult) {
     return new PlatformBillingResult.Builder()
         .setResponseCode(fromBillingResponseCode(billingResult.getResponseCode()))
+        .setSubResponseCode((long) billingResult.getOnPurchasesUpdatedSubResponseCode())
         .setDebugMessage(billingResult.getDebugMessage())
         .build();
   }
@@ -423,19 +426,26 @@ import java.util.Locale;
   static int toReplacementMode(@NonNull PlatformReplacementMode replacementMode) {
     switch (replacementMode) {
       case CHARGE_FULL_PRICE:
-        return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.CHARGE_FULL_PRICE;
+        return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+            .ReplacementMode.CHARGE_FULL_PRICE;
       case CHARGE_PRORATED_PRICE:
-        return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.CHARGE_PRORATED_PRICE;
+        return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+            .ReplacementMode.CHARGE_PRORATED_PRICE;
       case DEFERRED:
-        return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.DEFERRED;
+        return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+            .ReplacementMode.DEFERRED;
       case WITHOUT_PRORATION:
-        return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITHOUT_PRORATION;
+        return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+            .ReplacementMode.WITHOUT_PRORATION;
       case WITH_TIME_PRORATION:
-        return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITH_TIME_PRORATION;
+        return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+            .ReplacementMode.WITH_TIME_PRORATION;
       case UNKNOWN_REPLACEMENT_MODE:
-        return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.UNKNOWN_REPLACEMENT_MODE;
+        return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+            .ReplacementMode.UNKNOWN_REPLACEMENT_MODE;
     }
-    return BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.UNKNOWN_REPLACEMENT_MODE;
+    return BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams
+        .ReplacementMode.UNKNOWN_REPLACEMENT_MODE;
   }
 
   /**

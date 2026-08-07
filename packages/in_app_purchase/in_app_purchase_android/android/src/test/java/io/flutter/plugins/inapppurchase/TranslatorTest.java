@@ -9,14 +9,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import androidx.annotation.NonNull;
 import com.android.billingclient.api.AccountIdentifiers;
 import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchaseHistoryRecord;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -91,6 +93,22 @@ public class TranslatorTest {
   }
 
   @Test
+  public void fromOneTimePurchaseOfferDetailsList() {
+    ProductDetails.OneTimePurchaseOfferDetails offer =
+        mock(ProductDetails.OneTimePurchaseOfferDetails.class);
+    when(offer.getFormattedPrice()).thenReturn("$1.99");
+    when(offer.getPriceAmountMicros()).thenReturn(1990000L);
+    when(offer.getPriceCurrencyCode()).thenReturn("USD");
+
+    List<Messages.PlatformOneTimePurchaseOfferDetails> serialized =
+        Translator.fromOneTimePurchaseOfferDetailsList(Collections.singletonList(offer));
+
+    assertNotNull(serialized);
+    assertEquals(1, serialized.size());
+    assertSerialized(offer, serialized.get(0));
+  }
+
+  @Test
   public void fromPurchase() throws JSONException {
     final Purchase expected = new Purchase(PURCHASE_EXAMPLE_JSON, "signature");
     assertSerialized(expected, Translator.fromPurchase(expected));
@@ -103,36 +121,6 @@ public class TranslatorTest {
     Messages.PlatformPurchase serialized = Translator.fromPurchase(expected);
     assertNotNull(serialized.getOrderId());
     assertNull(serialized.getAccountIdentifiers());
-  }
-
-  @Test
-  public void fromPurchaseHistoryRecord() throws JSONException {
-    final PurchaseHistoryRecord expected =
-        new PurchaseHistoryRecord(PURCHASE_EXAMPLE_JSON, "signature");
-    assertSerialized(expected, Translator.fromPurchaseHistoryRecord(expected));
-  }
-
-  @Test
-  public void fromPurchasesHistoryRecordList() throws JSONException {
-    final String purchase2Json =
-        "{\"orderId\":\"foo2\",\"packageName\":\"bar\",\"productId\":\"consumable\",\"purchaseTime\":11111111,\"purchaseState\":0,\"purchaseToken\":\"baz\",\"developerPayload\":\"dummy payload\",\"isAcknowledged\":\"true\"}";
-    final String signature = "signature";
-    final List<PurchaseHistoryRecord> expected =
-        Arrays.asList(
-            new PurchaseHistoryRecord(PURCHASE_EXAMPLE_JSON, signature),
-            new PurchaseHistoryRecord(purchase2Json, signature));
-
-    final List<Messages.PlatformPurchaseHistoryRecord> serialized =
-        Translator.fromPurchaseHistoryRecordList(expected);
-
-    assertEquals(expected.size(), serialized.size());
-    assertSerialized(expected.get(0), serialized.get(0));
-    assertSerialized(expected.get(1), serialized.get(1));
-  }
-
-  @Test
-  public void fromPurchasesHistoryRecordList_null() {
-    assertEquals(Collections.emptyList(), Translator.fromPurchaseHistoryRecordList(null));
   }
 
   @Test
@@ -162,11 +150,32 @@ public class TranslatorTest {
         BillingResult.newBuilder()
             .setDebugMessage("dummy debug message")
             .setResponseCode(BillingClient.BillingResponseCode.OK)
+            .setOnPurchasesUpdatedSubResponseCode(
+                BillingClient.OnPurchasesUpdatedSubResponseCode.USER_INELIGIBLE)
             .build();
     Messages.PlatformBillingResult platformResult = Translator.fromBillingResult(newBillingResult);
 
     assertEquals(Messages.PlatformBillingResponse.OK, platformResult.getResponseCode());
+    assertEquals(
+        BillingClient.OnPurchasesUpdatedSubResponseCode.USER_INELIGIBLE,
+        platformResult.getSubResponseCode().intValue());
     assertEquals(platformResult.getDebugMessage(), newBillingResult.getDebugMessage());
+  }
+
+  @Test
+  public void fromBillingResult_billingUnavailable() {
+    BillingResult billingResult =
+        BillingResult.newBuilder()
+            .setResponseCode(BillingClient.BillingResponseCode.BILLING_UNAVAILABLE)
+            .build();
+
+    Messages.PlatformBillingResult platformResult = Translator.fromBillingResult(billingResult);
+
+    assertEquals(
+        Messages.PlatformBillingResponse.BILLING_UNAVAILABLE, platformResult.getResponseCode());
+    assertEquals(
+        BillingClient.OnPurchasesUpdatedSubResponseCode.NO_APPLICABLE_SUB_RESPONSE_CODE,
+        platformResult.getSubResponseCode().intValue());
   }
 
   @Test
@@ -177,6 +186,34 @@ public class TranslatorTest {
 
     assertEquals(Messages.PlatformBillingResponse.OK, platformResult.getResponseCode());
     assertEquals(platformResult.getDebugMessage(), newBillingResult.getDebugMessage());
+  }
+
+  @Test
+  public void toReplacementMode_usesProductReplacementValues() {
+    assertEquals(
+        BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.ReplacementMode
+            .WITH_TIME_PRORATION,
+        Translator.toReplacementMode(Messages.PlatformReplacementMode.WITH_TIME_PRORATION));
+    assertEquals(
+        BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.ReplacementMode
+            .CHARGE_PRORATED_PRICE,
+        Translator.toReplacementMode(Messages.PlatformReplacementMode.CHARGE_PRORATED_PRICE));
+    assertEquals(
+        BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.ReplacementMode
+            .WITHOUT_PRORATION,
+        Translator.toReplacementMode(Messages.PlatformReplacementMode.WITHOUT_PRORATION));
+    assertEquals(
+        BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.ReplacementMode
+            .CHARGE_FULL_PRICE,
+        Translator.toReplacementMode(Messages.PlatformReplacementMode.CHARGE_FULL_PRICE));
+    assertEquals(
+        BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.ReplacementMode
+            .DEFERRED,
+        Translator.toReplacementMode(Messages.PlatformReplacementMode.DEFERRED));
+    assertEquals(
+        BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.ReplacementMode
+            .UNKNOWN_REPLACEMENT_MODE,
+        Translator.toReplacementMode(Messages.PlatformReplacementMode.UNKNOWN_REPLACEMENT_MODE));
   }
 
   @Test
@@ -341,16 +378,6 @@ public class TranslatorTest {
     throw new IllegalStateException("Unhandled mode");
   }
 
-  private void assertSerialized(
-      PurchaseHistoryRecord expected, Messages.PlatformPurchaseHistoryRecord serialized) {
-    assertEquals(expected.getPurchaseTime(), serialized.getPurchaseTime().longValue());
-    assertEquals(expected.getPurchaseToken(), serialized.getPurchaseToken());
-    assertEquals(expected.getSignature(), serialized.getSignature());
-    assertEquals(expected.getOriginalJson(), serialized.getOriginalJson());
-    assertEquals(expected.getProducts(), serialized.getProducts());
-    assertEquals(expected.getDeveloperPayload(), serialized.getDeveloperPayload());
-    assertEquals(expected.getQuantity(), serialized.getQuantity().intValue());
-  }
 }
 
 class PurchaseWithoutAccountIdentifiers extends Purchase {

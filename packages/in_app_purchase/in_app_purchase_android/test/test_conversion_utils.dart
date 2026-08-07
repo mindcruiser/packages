@@ -14,6 +14,7 @@ import 'package:in_app_purchase_android/src/pigeon_converters.dart';
 PlatformBillingResult convertToPigeonResult(BillingResultWrapper targetResult) {
   return PlatformBillingResult(
     responseCode: billingResponseFromWrapper(targetResult.responseCode),
+    subResponseCode: targetResult.subResponseCode,
     debugMessage: targetResult.debugMessage!,
   );
 }
@@ -54,6 +55,10 @@ PlatformProductDetails convertToPigeonProductDetails(
       title: details.title,
       oneTimePurchaseOfferDetails: _convertToPigeonOneTimePurchaseOfferDetails(
           details.oneTimePurchaseOfferDetails),
+      oneTimePurchaseOfferDetailsList: details.oneTimePurchaseOfferDetailsList
+          ?.map(_convertToPigeonOneTimePurchaseOfferDetails)
+          .whereType<PlatformOneTimePurchaseOfferDetails>()
+          .toList(),
       subscriptionOfferDetails: details.subscriptionOfferDetails
           ?.map(convertToPigeonSubscriptionOfferDetails)
           .toList());

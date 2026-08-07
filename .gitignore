@@ -57,3 +57,8 @@ gradlew.bat
 .project
 .classpath
 .settings
+docs/
+*Test.java
+*_test.dart
+test/
+gradle/

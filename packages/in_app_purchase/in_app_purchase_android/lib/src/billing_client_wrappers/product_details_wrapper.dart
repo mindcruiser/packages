@@ -17,6 +17,7 @@ class ProductDetailsWrapper {
     required this.description,
     required this.name,
     this.oneTimePurchaseOfferDetails,
+    this.oneTimePurchaseOfferDetailsList,
     required this.productId,
     required this.productType,
     this.subscriptionOfferDetails,
@@ -37,6 +38,12 @@ class ProductDetailsWrapper {
   /// [oneTimePurchaseOfferDetails] is only set for [ProductType.inapp]. Returns
   /// null for [ProductType.subs].
   final OneTimePurchaseOfferDetailsWrapper? oneTimePurchaseOfferDetails;
+
+  /// All purchase options and offers for a one-time product.
+  ///
+  /// This is only set for [ProductType.inapp].
+  final List<OneTimePurchaseOfferDetailsWrapper>?
+      oneTimePurchaseOfferDetailsList;
 
   /// The product's id.
   final String productId;
@@ -66,6 +73,8 @@ class ProductDetailsWrapper {
         other.description == description &&
         other.name == name &&
         other.oneTimePurchaseOfferDetails == oneTimePurchaseOfferDetails &&
+        listEquals(other.oneTimePurchaseOfferDetailsList,
+            oneTimePurchaseOfferDetailsList) &&
         other.productId == productId &&
         other.productType == productType &&
         listEquals(other.subscriptionOfferDetails, subscriptionOfferDetails) &&
@@ -78,6 +87,7 @@ class ProductDetailsWrapper {
       description.hashCode,
       name.hashCode,
       oneTimePurchaseOfferDetails.hashCode,
+      oneTimePurchaseOfferDetailsList.hashCode,
       productId.hashCode,
       productType.hashCode,
       subscriptionOfferDetails.hashCode,
@@ -95,6 +105,7 @@ class ProductDetailsResponseWrapper implements HasBillingResponse {
   const ProductDetailsResponseWrapper({
     required this.billingResult,
     required this.productDetailsList,
+    this.unfetchedProductList = const <UnfetchedProductWrapper>[],
   });
 
   /// The final result of the [BillingClient.queryProductDetails] call.
@@ -102,6 +113,9 @@ class ProductDetailsResponseWrapper implements HasBillingResponse {
 
   /// A list of [ProductDetailsWrapper] matching the query to [BillingClient.queryProductDetails].
   final List<ProductDetailsWrapper> productDetailsList;
+
+  /// Products that the Play Billing service could not return.
+  final List<UnfetchedProductWrapper> unfetchedProductList;
 
   @override
   BillingResponse get responseCode => billingResult.responseCode;
@@ -114,11 +128,31 @@ class ProductDetailsResponseWrapper implements HasBillingResponse {
 
     return other is ProductDetailsResponseWrapper &&
         other.billingResult == billingResult &&
-        other.productDetailsList == productDetailsList;
+        listEquals(other.productDetailsList, productDetailsList) &&
+        listEquals(other.unfetchedProductList, unfetchedProductList);
   }
 
   @override
-  int get hashCode => Object.hash(billingResult, productDetailsList);
+  int get hashCode =>
+      Object.hash(billingResult, productDetailsList, unfetchedProductList);
+}
+
+/// A product that could not be returned by a product-details query.
+@immutable
+class UnfetchedProductWrapper {
+  /// Creates an unfetched product result.
+  const UnfetchedProductWrapper({required this.productId});
+
+  /// The product identifier that could not be fetched.
+  final String productId;
+
+  @override
+  bool operator ==(Object other) {
+    return other is UnfetchedProductWrapper && other.productId == productId;
+  }
+
+  @override
+  int get hashCode => productId.hashCode;
 }
 
 /// Recurrence mode of the pricing phase.

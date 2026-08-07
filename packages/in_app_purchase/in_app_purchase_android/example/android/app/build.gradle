@@ -74,6 +74,11 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     buildTypes {
         // Google Play Billing APIs only work with apps signed for production.
         debug {
@@ -105,7 +110,7 @@ flutter {
 }
 
 dependencies {
-    implementation 'com.android.billingclient:billing:6.1.0'
+    implementation 'com.android.billingclient:billing:9.0.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:5.1.1'
     testImplementation 'org.json:json:20250107'

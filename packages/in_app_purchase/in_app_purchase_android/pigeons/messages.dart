@@ -33,9 +33,13 @@ class PlatformAccountIdentifiers {
 
 /// Pigeon version of Java BillingResult.
 class PlatformBillingResult {
-  PlatformBillingResult(
-      {required this.responseCode, required this.debugMessage});
+  PlatformBillingResult({
+    required this.responseCode,
+    this.subResponseCode = 0,
+    required this.debugMessage,
+  });
   final PlatformBillingResponse responseCode;
+  final int subResponseCode;
   final String debugMessage;
 }
 
@@ -78,6 +82,7 @@ class PlatformProductDetails {
     required this.productType,
     required this.title,
     required this.oneTimePurchaseOfferDetails,
+    required this.oneTimePurchaseOfferDetailsList,
     required this.subscriptionOfferDetails,
   });
 
@@ -87,7 +92,16 @@ class PlatformProductDetails {
   final PlatformProductType productType;
   final String title;
   final PlatformOneTimePurchaseOfferDetails? oneTimePurchaseOfferDetails;
+  final List<PlatformOneTimePurchaseOfferDetails>?
+      oneTimePurchaseOfferDetailsList;
   final List<PlatformSubscriptionOfferDetails>? subscriptionOfferDetails;
+}
+
+/// Pigeon version of Java UnfetchedProduct.
+class PlatformUnfetchedProduct {
+  PlatformUnfetchedProduct({required this.productId});
+
+  final String productId;
 }
 
 /// Pigeon version of ProductDetailsResponseWrapper, which contains the
@@ -96,10 +110,12 @@ class PlatformProductDetailsResponse {
   PlatformProductDetailsResponse({
     required this.billingResult,
     required this.productDetails,
+    this.unfetchedProducts = const <PlatformUnfetchedProduct>[],
   });
 
   final PlatformBillingResult billingResult;
   final List<PlatformProductDetails> productDetails;
+  final List<PlatformUnfetchedProduct> unfetchedProducts;
 }
 
 /// Pigeon version of AlternativeBillingOnlyReportingDetailsWrapper, which
@@ -220,41 +236,6 @@ class PlatformPendingPurchaseUpdate {
 
   final List<String> products;
   final String purchaseToken;
-}
-
-/// Pigeon version of PurchaseHistoryRecord.
-///
-/// See also PurchaseHistoryRecordWrapper on the Dart side.
-class PlatformPurchaseHistoryRecord {
-  PlatformPurchaseHistoryRecord({
-    required this.quantity,
-    required this.purchaseTime,
-    required this.developerPayload,
-    required this.originalJson,
-    required this.purchaseToken,
-    required this.signature,
-    required this.products,
-  });
-
-  final int quantity;
-  final int purchaseTime;
-  final String? developerPayload;
-  final String originalJson;
-  final String purchaseToken;
-  final String signature;
-  final List<String> products;
-}
-
-/// Pigeon version of PurchasesHistoryResult, which contains the components of
-/// the Java PurchaseHistoryResponseListener callback.
-class PlatformPurchaseHistoryResponse {
-  PlatformPurchaseHistoryResponse({
-    required this.billingResult,
-    required this.purchases,
-  });
-
-  final PlatformBillingResult billingResult;
-  final List<PlatformPurchaseHistoryRecord> purchases;
 }
 
 /// Pigeon version of PurchasesResultWrapper, which contains the components of
@@ -418,11 +399,6 @@ abstract class InAppPurchaseApi {
   /// Wraps BillingClient#queryPurchasesAsync(QueryPurchaseParams, PurchaseResponseListener).
   @async
   PlatformPurchasesResponse queryPurchasesAsync(
-      PlatformProductType productType);
-
-  /// Wraps BillingClient#queryPurchaseHistoryAsync(QueryPurchaseHistoryParams, PurchaseHistoryResponseListener).
-  @async
-  PlatformPurchaseHistoryResponse queryPurchaseHistoryAsync(
       PlatformProductType productType);
 
   /// Wraps BillingClient#queryProductDetailsAsync(QueryProductDetailsParams, ProductDetailsResponseListener).

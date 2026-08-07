@@ -1,3 +1,21 @@
+## 0.5.0
+
+* Updates Google Play Billing Library from 7.1.1 to 9.0.0.
+* Updates the Android build baseline to AGP 8.11.1, Gradle 8.14, Java 17,
+  and a minimum Android SDK of 23.
+* Adds automatic Billing service reconnection.
+* Adds unfetched products and one-time purchase offer lists to product details
+  responses.
+* Adds Billing purchase-update sub-response codes to `BillingResultWrapper`.
+* **BREAKING CHANGES**:
+  * Removes `BillingClient.queryPurchaseHistory`,
+    `PurchaseHistoryRecordWrapper`, and `PurchasesHistoryResult` because the
+    underlying APIs were removed in Billing 9. Use `queryPurchases` for active
+    or pending purchases; track consumed purchases on a backend and use the
+    Voided Purchases API for canceled or voided purchases.
+  * Raises the minimum Android SDK version from 21 to 23 and the Java build
+    baseline from 11 to 17.
+
 ## 0.4.0+1
 
 * Updates compileSdk 34 to flutter.compileSdkVersion.

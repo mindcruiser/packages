@@ -20,7 +20,7 @@ import 'pending_purchases_params_wrapper.dart';
 /// Play itself while this app is open.
 ///
 /// This does not provide any hooks for purchases made in the past. See
-/// [BillingClient.queryPurchases] and [BillingClient.queryPurchaseHistory].
+/// [BillingClient.queryPurchases].
 ///
 /// All purchase information should also be verified manually, with your server
 /// if at all possible. See ["Verify a
@@ -176,7 +176,7 @@ class BillingClient {
   /// existing subscription.
   /// The [oldProduct](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.SubscriptionUpdateParams.Builder#setOldPurchaseToken(java.lang.String)) and [purchaseToken] are the product id and purchase token that the user is upgrading or downgrading from.
   /// [purchaseToken] must not be `null` if [oldProduct] is not `null`.
-  /// The [replacementMode](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.SubscriptionUpdateParams.Builder#setSubscriptionReplacementMode(int)) is the mode of replacement during subscription upgrade/downgrade.
+  /// The [replacementMode](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.ProductDetailsParams.SubscriptionProductReplacementParams.Builder#setReplacementMode(int)) is the mode of replacement during subscription upgrade/downgrade.
   /// This value will only be effective if the `oldProduct` is also set.
   Future<BillingResultWrapper> launchBillingFlow(
       {required String product,
@@ -204,8 +204,7 @@ class BillingClient {
 
   /// Fetches recent purchases for the given [ProductType].
   ///
-  /// Unlike [queryPurchaseHistory], This does not make a network request and
-  /// does not return items that are no longer owned.
+  /// This does not return items that are no longer owned.
   ///
   /// All purchase information should also be verified manually, with your
   /// server if at all possible. See ["Verify a
@@ -217,8 +216,7 @@ class BillingClient {
     // TODO(stuartmorgan): Investigate whether forceOkResponseCode is actually
     // correct. This code preserves the behavior of the pre-Pigeon-conversion
     // Java code, but the way this field is treated in PurchasesResultWrapper is
-    // inconsistent with ProductDetailsResponseWrapper and
-    // PurchasesHistoryResult, which have a getter for
+    // inconsistent with ProductDetailsResponseWrapper, which has a getter for
     // billingResult.responseCode instead of having a separate field, and the
     // other use of PurchasesResultWrapper (onPurchasesUpdated) was using
     // billingResult.getResponseCode() for responseCode instead of hard-coding
@@ -232,26 +230,6 @@ class BillingClient {
         await _hostApi
             .queryPurchasesAsync(platformProductTypeFromWrapper(productType)),
         forceOkResponseCode: true);
-  }
-
-  /// Fetches purchase history for the given [ProductType].
-  ///
-  /// Unlike [queryPurchases], this makes a network request via Play and returns
-  /// the most recent purchase for each [ProductDetailsWrapper] of the given
-  /// [ProductType] even if the item is no longer owned.
-  ///
-  /// All purchase information should also be verified manually, with your
-  /// server if at all possible. See ["Verify a
-  /// purchase"](https://developer.android.com/google/play/billing/billing_library_overview#Verify).
-  ///
-  /// This wraps
-  /// [`BillingClient#queryPurchaseHistoryAsync(QueryPurchaseHistoryParams, PurchaseHistoryResponseListener)`](https://developer.android.com/reference/com/android/billingclient/api/BillingClient#queryPurchaseHistoryAsync(com.android.billingclient.api.QueryPurchaseHistoryParams,%20com.android.billingclient.api.PurchaseHistoryResponseListener)).
-  @Deprecated('Use queryPurchases')
-  Future<PurchasesHistoryResult> queryPurchaseHistory(
-      ProductType productType) async {
-    return purchaseHistoryResultFromPlatform(
-        await _hostApi.queryPurchaseHistoryAsync(
-            platformProductTypeFromWrapper(productType)));
   }
 
   /// Consumes a given in-app product.

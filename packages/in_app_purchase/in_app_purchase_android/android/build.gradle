@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.1'
+        classpath 'com.android.tools.build:gradle:8.11.1'
     }
 }
 
@@ -22,6 +22,17 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
+    flavorDimensions 'billingMode'
+
+    productFlavors {
+        play {
+            dimension 'billingMode'
+        }
+        disabled {
+            dimension 'billingMode'
+        }
+    }
+
     buildFeatures {
         buildConfig true
     }
@@ -31,7 +42,7 @@ android {
     compileSdk = flutter.compileSdkVersion
 
     defaultConfig {
-        minSdk 21
+        minSdk 23
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     lintOptions {
@@ -40,8 +51,8 @@ android {
         disable 'AndroidGradlePluginVersion', 'InvalidPackage', 'GradleDependency', 'NewerVersionAvailable'
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
 
@@ -56,11 +67,53 @@ android {
             }
         }
     }
+
+}
+
+// 两套实现共用相同 FQCN；每个变体只能将其对应实现传给 javac。
+def isSelectedMainSource = { File sourceFile, boolean useGoogleBillingClient ->
+    def sourcePath = sourceFile.path.replace('\\', '/')
+    if (useGoogleBillingClient) {
+        return !sourcePath.contains('/src/main/java/io/flutter/plugins/inapppurchase_noop/')
+    }
+    if (sourcePath.contains('/src/main/java/io/flutter/plugins/inapppurchase_noop/')) {
+        return true
+    }
+    if (sourcePath.contains('/src/main/java/io/flutter/plugins/inapppurchase/')) {
+        return sourcePath.endsWith('/Messages.java')
+    }
+    return true
+}
+
+def isSelectedUnitTestSource = { File sourceFile, boolean useGoogleBillingClient ->
+    def sourcePath = sourceFile.path.replace('\\', '/')
+    def isNoopTest = sourcePath.endsWith(
+        '/src/test/java/io/flutter/plugins/inapppurchase/NoopInAppPurchaseApiTest.java')
+    if (useGoogleBillingClient) {
+        return !isNoopTest
+    }
+    return isNoopTest || !sourcePath.contains('/src/test/java/')
+}
+
+afterEvaluate {
+    tasks.withType(JavaCompile).configureEach {
+        def useGoogleBillingClient = name.contains('Play')
+        if (name.matches('compile.*UnitTestJavaWithJavac')) {
+            setSource(source.filter { sourceFile ->
+                isSelectedUnitTestSource(sourceFile, useGoogleBillingClient)
+            })
+        } else if (name.matches('compile(?!.*AndroidTest).*JavaWithJavac')) {
+            setSource(source.filter { sourceFile ->
+                isSelectedMainSource(sourceFile, useGoogleBillingClient)
+            })
+        }
+    }
 }
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.9.1'
-    implementation 'com.android.billingclient:billing:7.1.1'
+    implementation 'androidx.core:core:1.9.0'
+    playImplementation 'com.android.billingclient:billing:9.0.0'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20250107'
     testImplementation 'org.mockito:mockito-core:5.17.0'

@@ -25,6 +25,7 @@ PlatformBillingChoiceMode platformBillingChoiceMode(BillingChoiceMode mode) {
 BillingResultWrapper resultWrapperFromPlatform(PlatformBillingResult result) {
   return BillingResultWrapper(
       responseCode: billingResponseFromPlatform(result.responseCode),
+      subResponseCode: result.subResponseCode,
       debugMessage: result.debugMessage);
 }
 
@@ -35,7 +36,16 @@ ProductDetailsResponseWrapper productDetailsResponseWrapperFromPlatform(
       billingResult: resultWrapperFromPlatform(response.billingResult),
       productDetailsList: response.productDetails
           .map(productDetailsWrapperFromPlatform)
+          .toList(),
+      unfetchedProductList: response.unfetchedProducts
+          .map(unfetchedProductWrapperFromPlatform)
           .toList());
+}
+
+/// Creates an [UnfetchedProductWrapper] from the Pigeon equivalent.
+UnfetchedProductWrapper unfetchedProductWrapperFromPlatform(
+    PlatformUnfetchedProduct product) {
+  return UnfetchedProductWrapper(productId: product.productId);
 }
 
 /// Creates a [ProductDetailsWrapper] from the Pigeon equivalent.
@@ -49,6 +59,10 @@ ProductDetailsWrapper productDetailsWrapperFromPlatform(
     title: product.title,
     oneTimePurchaseOfferDetails: oneTimePurchaseOfferDetailsWrapperFromPlatform(
         product.oneTimePurchaseOfferDetails),
+    oneTimePurchaseOfferDetailsList: product.oneTimePurchaseOfferDetailsList
+        ?.map(oneTimePurchaseOfferDetailsWrapperFromPlatform)
+        .whereType<OneTimePurchaseOfferDetailsWrapper>()
+        .toList(),
     subscriptionOfferDetails: product.subscriptionOfferDetails
         ?.map(subscriptionOfferDetailsWrapperFromPlatform)
         .toList(),
@@ -66,30 +80,6 @@ OneTimePurchaseOfferDetailsWrapper?
     formattedPrice: details.formattedPrice,
     priceAmountMicros: details.priceAmountMicros,
     priceCurrencyCode: details.priceCurrencyCode,
-  );
-}
-
-/// Creates a [PurchaseHistoryResult] from the Pigeon equivalent.
-PurchasesHistoryResult purchaseHistoryResultFromPlatform(
-    PlatformPurchaseHistoryResponse response) {
-  return PurchasesHistoryResult(
-    billingResult: resultWrapperFromPlatform(response.billingResult),
-    purchaseHistoryRecordList: response.purchases
-        .map(purchaseHistoryRecordWrapperFromPlatform)
-        .toList(),
-  );
-}
-
-/// Creates a [PurchaseHistoryRecordWrapper] from the Pigeon equivalent.
-PurchaseHistoryRecordWrapper purchaseHistoryRecordWrapperFromPlatform(
-    PlatformPurchaseHistoryRecord record) {
-  return PurchaseHistoryRecordWrapper(
-    purchaseTime: record.purchaseTime,
-    purchaseToken: record.purchaseToken,
-    signature: record.signature,
-    products: record.products,
-    originalJson: record.originalJson,
-    developerPayload: record.developerPayload,
   );
 }
 

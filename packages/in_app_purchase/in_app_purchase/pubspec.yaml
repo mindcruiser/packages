@@ -2,7 +2,7 @@ name: in_app_purchase
 description: A Flutter plugin for in-app purchases. Exposes APIs for making in-app purchases through the App Store and Google Play.
 repository: https://github.com/flutter/packages/tree/main/packages/in_app_purchase/in_app_purchase
 issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+in_app_purchase%22
-version: 3.2.3
+version: 3.3.0
 
 environment:
   sdk: ^3.5.0
@@ -22,23 +22,29 @@ dependencies:
   flutter:
     sdk: flutter
 #  in_app_purchase_android: ^0.3.4
+#  in_app_purchase_android:
+#    git:
+#      url: https://github.com/mindcruiser/packages.git
+#      path: packages/in_app_purchase/in_app_purchase_android
+#      ref: v3.3.0+android
+# #  in_app_purchase_platform_interface: ^1.4.0
+#  in_app_purchase_platform_interface:
+#    git:
+#      url: https://github.com/mindcruiser/packages.git
+#      path: packages/in_app_purchase/in_app_purchase_platform_interface
+#      ref: v3.3.0+android
+# #  in_app_purchase_storekit: ^0.3.14
+#  in_app_purchase_storekit:
+#    git:
+#      url: https://github.com/mindcruiser/packages.git
+#      path: packages/in_app_purchase/in_app_purchase_storekit
+#      ref: v3.3.0+android
   in_app_purchase_android:
-    git:
-      url: https://github.com/mindcruiser/packages.git
-      path: packages/in_app_purchase/in_app_purchase_android
-      ref: notta_fork_v3.2.3
-#  in_app_purchase_platform_interface: ^1.4.0
+    path: ../in_app_purchase_android
   in_app_purchase_platform_interface:
-    git:
-      url: https://github.com/mindcruiser/packages.git
-      path: packages/in_app_purchase/in_app_purchase_platform_interface
-      ref: notta_fork_v3.2.3
-#  in_app_purchase_storekit: ^0.3.14
+    path: ../in_app_purchase_platform_interface
   in_app_purchase_storekit:
-    git:
-      url: https://github.com/mindcruiser/packages.git
-      path: packages/in_app_purchase/in_app_purchase_storekit
-      ref: notta_fork_v3.2.3
+    path: ../in_app_purchase_storekit
 
 dev_dependencies:
   flutter_test:

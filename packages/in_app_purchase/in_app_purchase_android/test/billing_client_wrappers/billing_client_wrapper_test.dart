@@ -190,13 +190,18 @@ void main() {
     test('returns ProductDetailsResponseWrapper', () async {
       const String debugMessage = 'dummy message';
       const BillingResponse responseCode = BillingResponse.ok;
+      const int subResponseCode = 2;
       when(mockApi.queryProductDetailsAsync(any))
           .thenAnswer((_) async => PlatformProductDetailsResponse(
                 billingResult: PlatformBillingResult(
                     responseCode: PlatformBillingResponse.ok,
+                    subResponseCode: subResponseCode,
                     debugMessage: debugMessage),
                 productDetails: <PlatformProductDetails>[
                   convertToPigeonProductDetails(dummyOneTimeProductDetails)
+                ],
+                unfetchedProducts: <PlatformUnfetchedProduct>[
+                  PlatformUnfetchedProduct(productId: 'missing'),
                 ],
               ));
 
@@ -209,9 +214,21 @@ void main() {
       );
 
       const BillingResultWrapper billingResult = BillingResultWrapper(
-          responseCode: responseCode, debugMessage: debugMessage);
+          responseCode: responseCode,
+          subResponseCode: subResponseCode,
+          debugMessage: debugMessage);
       expect(response.billingResult, equals(billingResult));
       expect(response.productDetailsList, contains(dummyOneTimeProductDetails));
+      expect(
+        response.productDetailsList.single.oneTimePurchaseOfferDetailsList,
+        dummyOneTimeProductDetails.oneTimePurchaseOfferDetailsList,
+      );
+      expect(
+        response.unfetchedProductList,
+        const <UnfetchedProductWrapper>[
+          UnfetchedProductWrapper(productId: 'missing'),
+        ],
+      );
     });
   });
 
@@ -447,28 +464,6 @@ void main() {
       // API no longer returns it.
       expect(response.responseCode, BillingResponse.ok);
       expect(response.purchasesList, isEmpty);
-    });
-  });
-
-  group('queryPurchaseHistory', () {
-    test('handles empty purchases', () async {
-      const BillingResponse expectedCode = BillingResponse.userCanceled;
-      const String debugMessage = 'dummy message';
-      const BillingResultWrapper expectedBillingResult = BillingResultWrapper(
-          responseCode: expectedCode, debugMessage: debugMessage);
-      when(mockApi.queryPurchaseHistoryAsync(any))
-          .thenAnswer((_) async => PlatformPurchaseHistoryResponse(
-                billingResult: PlatformBillingResult(
-                    responseCode: PlatformBillingResponse.userCanceled,
-                    debugMessage: debugMessage),
-                purchases: <PlatformPurchaseHistoryRecord>[],
-              ));
-
-      final PurchasesHistoryResult response =
-          await billingClient.queryPurchaseHistory(ProductType.inapp);
-
-      expect(response.billingResult, equals(expectedBillingResult));
-      expect(response.purchaseHistoryRecordList, isEmpty);
     });
   });
 

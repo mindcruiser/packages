@@ -1,4 +1,46 @@
 <?code-excerpt path-base="example/lib"?>
+# Migration Guide from 0.4.x to 0.5.0
+
+Version 0.5.0 upgrades the Android implementation from Google Play Billing
+Library 7.1.1 to 9.0.0. Applications embedding the plugin must use Android SDK
+23 or newer and a Java 17-compatible Android build.
+
+## Purchase history removal
+
+Google Play Billing 9 removes `queryPurchaseHistoryAsync`, so version 0.5.0
+removes `BillingClient.queryPurchaseHistory`, `PurchaseHistoryRecordWrapper`,
+and `PurchasesHistoryResult`.
+
+Choose the replacement based on the data being queried:
+
+* Use `BillingClient.queryPurchases` for active or pending purchases.
+* Track consumed purchases on the application backend.
+* Use the server-side Voided Purchases API for canceled or voided purchases.
+* Use `ProductDetailsWrapper.subscriptionOfferDetails` to determine which
+  subscription offers are available instead of inferring eligibility from
+  purchase history.
+
+`queryPurchases` is not a drop-in replacement for purchase history because it
+does not return consumed, canceled, or voided purchases.
+
+## Product details query results
+
+`ProductDetailsResponseWrapper.unfetchedProductList` reports product IDs that
+Google Play could not return. Successful products remain available through
+`productDetailsList`.
+
+For one-time products,
+`ProductDetailsWrapper.oneTimePurchaseOfferDetailsList` contains all purchase
+options and offers returned by Billing 9. The existing singular
+`oneTimePurchaseOfferDetails` field remains available for compatibility.
+
+## Purchase-update sub-response codes
+
+`BillingResultWrapper.subResponseCode` exposes the more specific Billing 9
+purchase-update failure reason. A value of `0` means that no specific reason
+applies, `1` means insufficient funds, and `2` means the user is ineligible.
+Applications should map these values to their own localized user guidance.
+
 # Migration Guide from 0.2.x to 0.3.0
 
 Starting November 2023, Android Billing Client V4 is no longer supported,

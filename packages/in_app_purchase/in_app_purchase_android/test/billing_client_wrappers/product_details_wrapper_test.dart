@@ -17,6 +17,13 @@ const ProductDetailsWrapper dummyOneTimeProductDetails = ProductDetailsWrapper(
     priceAmountMicros: 100000000,
     priceCurrencyCode: 'USD',
   ),
+  oneTimePurchaseOfferDetailsList: <OneTimePurchaseOfferDetailsWrapper>[
+    OneTimePurchaseOfferDetailsWrapper(
+      formattedPrice: r'$100',
+      priceAmountMicros: 100000000,
+      priceCurrencyCode: 'USD',
+    ),
+  ],
 );
 
 void main() {
@@ -37,6 +44,27 @@ void main() {
   });
 
   group('BillingResultWrapper', () {
+    test('subResponseCode defaults to no applicable code', () {
+      const BillingResultWrapper result = BillingResultWrapper(
+        responseCode: BillingResponse.ok,
+      );
+
+      expect(result.subResponseCode, 0);
+    });
+
+    test('subResponseCode participates in equality', () {
+      const BillingResultWrapper insufficientFunds = BillingResultWrapper(
+        responseCode: BillingResponse.userCanceled,
+        subResponseCode: 1,
+      );
+      const BillingResultWrapper userIneligible = BillingResultWrapper(
+        responseCode: BillingResponse.userCanceled,
+        subResponseCode: 2,
+      );
+
+      expect(insufficientFunds, isNot(userIneligible));
+    });
+
     test('operator == of ProductDetailsWrapper works fine', () {
       const ProductDetailsWrapper firstProductDetailsInstance =
           ProductDetailsWrapper(
@@ -123,5 +151,16 @@ void main() {
       );
       expect(firstBillingResultInstance == secondBillingResultInstance, isTrue);
     });
+  });
+
+  test('UnfetchedProductWrapper compares product identifiers', () {
+    expect(
+      const UnfetchedProductWrapper(productId: 'missing'),
+      const UnfetchedProductWrapper(productId: 'missing'),
+    );
+    expect(
+      const UnfetchedProductWrapper(productId: 'missing'),
+      isNot(const UnfetchedProductWrapper(productId: 'other')),
+    );
   });
 }

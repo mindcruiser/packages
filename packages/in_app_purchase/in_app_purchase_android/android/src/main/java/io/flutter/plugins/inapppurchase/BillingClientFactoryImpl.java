@@ -25,8 +25,9 @@ final class BillingClientFactoryImpl implements BillingClientFactory {
       PlatformBillingChoiceMode billingChoiceMode,
       Messages.PlatformPendingPurchasesParams pendingPurchasesParams) {
     BillingClient.Builder builder =
-        BillingClient.newBuilder(context)
-            .enablePendingPurchases(toPendingPurchasesParams(pendingPurchasesParams));
+        createBillingClientBuilder(context)
+            .enablePendingPurchases(toPendingPurchasesParams(pendingPurchasesParams))
+            .enableAutoServiceReconnection();
     switch (billingChoiceMode) {
       case ALTERNATIVE_BILLING_ONLY:
         // https://developer.android.com/google/play/billing/alternative/alternative-billing-without-user-choice-in-app
@@ -45,6 +46,11 @@ final class BillingClientFactoryImpl implements BillingClientFactory {
         break;
     }
     return builder.setListener(new PluginPurchaseListener(callbackApi)).build();
+  }
+
+  @VisibleForTesting
+  /* package */ BillingClient.Builder createBillingClientBuilder(@NonNull Context context) {
+    return BillingClient.newBuilder(context);
   }
 
   @VisibleForTesting
