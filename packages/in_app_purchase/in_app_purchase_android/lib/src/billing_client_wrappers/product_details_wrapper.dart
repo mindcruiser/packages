@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,11 +39,12 @@ class ProductDetailsWrapper {
   /// null for [ProductType.subs].
   final OneTimePurchaseOfferDetailsWrapper? oneTimePurchaseOfferDetails;
 
-  /// All purchase options and offers for a one-time product.
+  /// The list of offer details for a one-time purchase product.
   ///
-  /// This is only set for [ProductType.inapp].
+  /// [oneTimePurchaseOfferDetailsList] is only set for [ProductType.inapp].
+  /// Returns null for [ProductType.subs].
   final List<OneTimePurchaseOfferDetailsWrapper>?
-      oneTimePurchaseOfferDetailsList;
+  oneTimePurchaseOfferDetailsList;
 
   /// The product's id.
   final String productId;
@@ -73,8 +74,10 @@ class ProductDetailsWrapper {
         other.description == description &&
         other.name == name &&
         other.oneTimePurchaseOfferDetails == oneTimePurchaseOfferDetails &&
-        listEquals(other.oneTimePurchaseOfferDetailsList,
-            oneTimePurchaseOfferDetailsList) &&
+        listEquals(
+          other.oneTimePurchaseOfferDetailsList,
+          oneTimePurchaseOfferDetailsList,
+        ) &&
         other.productId == productId &&
         other.productType == productType &&
         listEquals(other.subscriptionOfferDetails, subscriptionOfferDetails) &&
@@ -114,7 +117,7 @@ class ProductDetailsResponseWrapper implements HasBillingResponse {
   /// A list of [ProductDetailsWrapper] matching the query to [BillingClient.queryProductDetails].
   final List<ProductDetailsWrapper> productDetailsList;
 
-  /// Products that the Play Billing service could not return.
+  /// A list of [UnfetchedProductWrapper] that could not be fetched by [BillingClient.queryProductDetails].
   final List<UnfetchedProductWrapper> unfetchedProductList;
 
   @override
@@ -137,17 +140,23 @@ class ProductDetailsResponseWrapper implements HasBillingResponse {
       Object.hash(billingResult, productDetailsList, unfetchedProductList);
 }
 
-/// A product that could not be returned by a product-details query.
+/// Dart wrapper around [`com.android.billingclient.api.QueryProductDetailsParams.Product`](https://developer.android.com/reference/com/android/billingclient/api/QueryProductDetailsParams.Product).
+///
+/// Contains the details of a product that could not be fetched by the Google Play Billing Library.
 @immutable
 class UnfetchedProductWrapper {
-  /// Creates an unfetched product result.
+  /// Creates an [UnfetchedProductWrapper].
   const UnfetchedProductWrapper({required this.productId});
 
-  /// The product identifier that could not be fetched.
+  /// The product ID that could not be fetched.
   final String productId;
 
   @override
   bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+
     return other is UnfetchedProductWrapper && other.productId == productId;
   }
 

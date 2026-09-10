@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,17 +58,18 @@ class PurchaseWrapper {
 
   @override
   int get hashCode => Object.hash(
-      orderId,
-      packageName,
-      purchaseTime,
-      purchaseToken,
-      signature,
-      products.hashCode,
-      isAutoRenewing,
-      originalJson,
-      isAcknowledged,
-      purchaseState,
-      pendingPurchaseUpdate);
+    orderId,
+    packageName,
+    purchaseTime,
+    purchaseToken,
+    signature,
+    products.hashCode,
+    isAutoRenewing,
+    originalJson,
+    isAcknowledged,
+    purchaseState,
+    pendingPurchaseUpdate,
+  );
 
   /// The unique ID for this purchase. Corresponds to the Google Payments order
   /// ID.
@@ -149,7 +150,6 @@ class PurchaseWrapper {
 }
 
 @immutable
-
 /// Represents a pending change/update to the existing purchase.
 ///
 /// This wraps [`com.android.billingclient.api.Purchase.PendingPurchaseUpdate`](https://developer.android.com/reference/com/android/billingclient/api/Purchase.PendingPurchaseUpdate).
@@ -180,10 +180,82 @@ class PendingPurchaseUpdateWrapper {
   }
 
   @override
+  int get hashCode => Object.hash(purchaseToken, products.hashCode);
+}
+
+/// Data structure representing a purchase history record.
+///
+/// This class includes a subset of fields in [PurchaseWrapper].
+///
+/// This wraps [`com.android.billlingclient.api.PurchaseHistoryRecord`](https://developer.android.com/reference/com/android/billingclient/api/PurchaseHistoryRecord)
+///
+/// * See also: [BillingClient.queryPurchaseHistory] for obtaining a [PurchaseHistoryRecordWrapper].
+// We can optionally make [PurchaseWrapper] extend or implement [PurchaseHistoryRecordWrapper].
+// For now, we keep them separated classes to be consistent with Android's BillingClient implementation.
+@immutable
+class PurchaseHistoryRecordWrapper {
+  /// Creates a [PurchaseHistoryRecordWrapper] with the given record details.
+  const PurchaseHistoryRecordWrapper({
+    required this.purchaseTime,
+    required this.purchaseToken,
+    required this.signature,
+    required this.products,
+    required this.originalJson,
+    required this.developerPayload,
+  });
+
+  /// When the purchase was made, as an epoch timestamp.
+  final int purchaseTime;
+
+  /// A unique ID for a given [ProductDetailsWrapper], user, and purchase.
+  final String purchaseToken;
+
+  /// Signature of purchase data, signed with the developer's private key. Uses
+  /// RSASSA-PKCS1-v1_5.
+  final String signature;
+
+  /// The product ID of this purchase.
+  final List<String> products;
+
+  /// Details about this purchase, in JSON.
+  ///
+  /// This can be used verify a purchase. See ["Verify a purchase on a
+  /// device"](https://developer.android.com/google/play/billing/billing_library_overview#Verify-purchase-device).
+  /// Note though that verifying a purchase locally is inherently insecure (see
+  /// the article for more details).
+  final String originalJson;
+
+  /// The payload specified by the developer when the purchase was acknowledged or consumed.
+  ///
+  /// The value is `null` if it wasn't specified when the purchase was acknowledged or consumed.
+  final String? developerPayload;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) {
+      return true;
+    }
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is PurchaseHistoryRecordWrapper &&
+        other.purchaseTime == purchaseTime &&
+        other.purchaseToken == purchaseToken &&
+        other.signature == signature &&
+        listEquals(other.products, products) &&
+        other.originalJson == originalJson &&
+        other.developerPayload == developerPayload;
+  }
+
+  @override
   int get hashCode => Object.hash(
-        purchaseToken,
-        products.hashCode,
-      );
+    purchaseTime,
+    purchaseToken,
+    signature,
+    products.hashCode,
+    originalJson,
+    developerPayload,
+  );
 }
 
 /// A data struct representing the result of a transaction.
@@ -196,10 +268,11 @@ class PendingPurchaseUpdateWrapper {
 @immutable
 class PurchasesResultWrapper implements HasBillingResponse {
   /// Creates a [PurchasesResultWrapper] with the given purchase result details.
-  const PurchasesResultWrapper(
-      {required this.responseCode,
-      required this.billingResult,
-      required this.purchasesList});
+  const PurchasesResultWrapper({
+    required this.responseCode,
+    required this.billingResult,
+    required this.purchasesList,
+  });
 
   @override
   bool operator ==(Object other) {
@@ -232,6 +305,46 @@ class PurchasesResultWrapper implements HasBillingResponse {
   ///
   /// May be empty, especially if [responseCode] is not [BillingResponse.ok].
   final List<PurchaseWrapper> purchasesList;
+}
+
+/// A data struct representing the result of a purchase history.
+///
+/// Contains a potentially empty list of [PurchaseHistoryRecordWrapper]s and a [BillingResultWrapper]
+/// that contains a detailed description of the status.
+@immutable
+class PurchasesHistoryResult implements HasBillingResponse {
+  /// Creates a [PurchasesHistoryResult] with the provided history.
+  const PurchasesHistoryResult({
+    required this.billingResult,
+    required this.purchaseHistoryRecordList,
+  });
+
+  @override
+  BillingResponse get responseCode => billingResult.responseCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) {
+      return true;
+    }
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is PurchasesHistoryResult &&
+        other.purchaseHistoryRecordList == purchaseHistoryRecordList &&
+        other.billingResult == billingResult;
+  }
+
+  @override
+  int get hashCode => Object.hash(billingResult, purchaseHistoryRecordList);
+
+  /// The detailed description of the status of the [BillingClient.queryPurchaseHistory].
+  final BillingResultWrapper billingResult;
+
+  /// The list of queried purchase history records.
+  ///
+  /// May be empty, especially if [billingResult.responseCode] is not [BillingResponse.ok].
+  final List<PurchaseHistoryRecordWrapper> purchaseHistoryRecordList;
 }
 
 /// Possible state of a [PurchaseWrapper].

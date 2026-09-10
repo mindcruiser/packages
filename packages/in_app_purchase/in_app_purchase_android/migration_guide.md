@@ -1,45 +1,27 @@
 <?code-excerpt path-base="example/lib"?>
 # Migration Guide from 0.4.x to 0.5.0
 
-Version 0.5.0 upgrades the Android implementation from Google Play Billing
-Library 7.1.1 to 9.0.0. Applications embedding the plugin must use Android SDK
-23 or newer and a Java 17-compatible Android build.
+Version 0.5.0 updates to use Google Play Billing Library 8.0.0. This update includes breaking changes unrelated to the Dart API surface, but specific methods in `BillingClientWrapper` have been removed to align with the native library.
 
-## Purchase history removal
+## Removal of `queryPurchaseHistory`
 
-Google Play Billing 9 removes `queryPurchaseHistoryAsync`, so version 0.5.0
-removes `BillingClient.queryPurchaseHistory`, `PurchaseHistoryRecordWrapper`,
-and `PurchasesHistoryResult`.
+The `queryPurchaseHistory` method in `BillingClientWrapper` has been removed because the underlying
+native method `queryPurchaseHistoryAsync` was removed in Google Play Billing Library 7.0.0.
 
-Choose the replacement based on the data being queried:
+Instead, use `queryPurchases` (which calls `queryPurchasesAsync` natively) to fetch active purchases.
+This is now the recommended way to check for existing purchases.
 
-* Use `BillingClient.queryPurchases` for active or pending purchases.
-* Track consumed purchases on the application backend.
-* Use the server-side Voided Purchases API for canceled or voided purchases.
-* Use `ProductDetailsWrapper.subscriptionOfferDetails` to determine which
-  subscription offers are available instead of inferring eligibility from
-  purchase history.
+`queryPurchaseHistory` previously allowed checking for canceled, refunded, or voided purchases.
+With its removal, this information is no longer available through the Billing Client.
+The [Google Play Developer API](https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.products/get)
+can be used to verify the state of past purchases.
 
-`queryPurchases` is not a drop-in replacement for purchase history because it
-does not return consumed, canceled, or voided purchases.
+### Enhancements
 
-## Product details query results
-
-`ProductDetailsResponseWrapper.unfetchedProductList` reports product IDs that
-Google Play could not return. Successful products remain available through
-`productDetailsList`.
-
-For one-time products,
-`ProductDetailsWrapper.oneTimePurchaseOfferDetailsList` contains all purchase
-options and offers returned by Billing 9. The existing singular
-`oneTimePurchaseOfferDetails` field remains available for compatibility.
-
-## Purchase-update sub-response codes
-
-`BillingResultWrapper.subResponseCode` exposes the more specific Billing 9
-purchase-update failure reason. A value of `0` means that no specific reason
-applies, `1` means insufficient funds, and `2` means the user is ineligible.
-Applications should map these values to their own localized user guidance.
+*   `BillingResultWrapper` and `PlatformBillingResult` now include a `subResponseCode` field.
+*   `ProductDetailsResponseWrapper` and `PlatformProductDetailsResponse` now include an
+`unfetchedProductList` to identify products that could not be retrieved.
+*   `ProductDetailsWrapper` now supports `oneTimePurchaseOfferDetailsList` for products with multiple buy options.
 
 # Migration Guide from 0.2.x to 0.3.0
 
@@ -104,6 +86,7 @@ void handleOneTimePurchasePrice(ProductDetails productDetails) {
     }
   }
 }
+
 ```
 
 ### Use case: free trials
@@ -143,6 +126,7 @@ void handleFreeTrialPeriod(ProductDetails productDetails) {
     }
   }
 }
+
 ```
 
 ### Use case: introductory prices
@@ -184,6 +168,7 @@ void handleIntroductoryPricePeriod(ProductDetails productDetails) {
     }
   }
 }
+
 ```
 
 ## Removal of `launchPriceChangeConfirmationFlow`

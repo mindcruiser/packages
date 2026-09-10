@@ -1,20 +1,53 @@
 ## 0.5.0
 
-* Updates Google Play Billing Library from 7.1.1 to 9.0.0.
-* Updates the Android build baseline to AGP 8.11.1, Gradle 8.14, Java 17,
-  and a minimum Android SDK of 23.
-* Adds automatic Billing service reconnection.
-* Adds unfetched products and one-time purchase offer lists to product details
-  responses.
-* Adds Billing purchase-update sub-response codes to `BillingResultWrapper`.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+* Updates Google Play Billing Library from 7.1.1 to 8.0.0.
 * **BREAKING CHANGES**:
-  * Removes `BillingClient.queryPurchaseHistory`,
-    `PurchaseHistoryRecordWrapper`, and `PurchasesHistoryResult` because the
-    underlying APIs were removed in Billing 9. Use `queryPurchases` for active
-    or pending purchases; track consumed purchases on a backend and use the
-    Voided Purchases API for canceled or voided purchases.
-  * Raises the minimum Android SDK version from 21 to 23 and the Java build
-    baseline from 11 to 17.
+  * Removes `queryPurchaseHistory` and its wrapper `queryPurchaseHistoryAsync`. Use `queryPurchases` instead.
+* Adds support for `subResponseCode` in `BillingResultWrapper`.
+* Adds support for `oneTimePurchaseOfferDetailsList` in `ProductDetailsWrapper`.
+* Adds support for `unfetchedProductList` in `ProductDetailsResponseWrapper` to handle product IDs that could not be fetched.
+
+## 0.4.0+11
+
+* Updates internal implementation to use Kotlin Pigeon.
+
+## 0.4.0+10
+
+* Fixes dartdoc comments that accidentally used HTML.
+
+## 0.4.0+9
+
+* Updates build files from Groovy to Kotlin.
+
+## 0.4.0+8
+
+* Bumps com.android.tools.build:gradle from 8.12.1 to 8.13.1.
+
+## 0.4.0+7
+
+* Updates to Pigeon 26.
+
+## 0.4.0+6
+
+* Updates Java compatibility version to 17 and minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 0.4.0+5
+
+* Resolves Gradle 9 deprecations.
+
+## 0.4.0+4
+
+* Bumps com.android.tools.build:gradle to 8.12.1.
+* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+
+## 0.4.0+3
+
+* Updates kotlin version to 2.2.0 to enable gradle 8.11 support.
+
+## 0.4.0+2
+
+* Adds support for setting the `offerToken` on `GooglePlayPurchaseParam`.
 
 ## 0.4.0+1
 

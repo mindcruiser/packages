@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,7 @@ const String kInvalidBillingResultErrorMessage =
 /// Params containing the response code and the debug message from the Play Billing API response.
 @immutable
 class BillingResultWrapper implements HasBillingResponse {
-  /// Constructs the object with [responseCode], [subResponseCode], and
-  /// [debugMessage].
+  /// Constructs the object with [responseCode] and [debugMessage].
   const BillingResultWrapper({
     required this.responseCode,
     this.subResponseCode = 0,
@@ -28,10 +27,14 @@ class BillingResultWrapper implements HasBillingResponse {
   @override
   final BillingResponse responseCode;
 
-  /// Sub-response code returned by the Play Billing API.
+  /// Sub-response code returned in the Play Billing API calls.
   ///
-  /// Possible values are `0` when no more specific response code applies, `1`
-  /// for insufficient funds, and `2` when the user is ineligible.
+  /// Defaults to 0 which is returned when no other sub-response code is applicable.
+  ///
+  /// Possible values:
+  /// * `0`: `NO_APPLICABLE_SUB_RESPONSE_CODE`
+  /// * `1`: `PAYMENT_DECLINED_DUE_TO_INSUFFICIENT_FUNDS`
+  /// * `2`: `USER_INELIGIBLE`
   final int subResponseCode;
 
   /// Debug message returned in the Play Billing API calls.
