@@ -22,30 +22,21 @@ dependencies:
   flutter:
     sdk: flutter
 
-#  in_app_purchase_android:
-#    git:
-#      url: https://github.com/mindcruiser/packages.git
-#      path: packages/in_app_purchase/in_app_purchase_android
-#      ref: v3.3.0+android
-
-#  in_app_purchase_platform_interface:
-#    git:
-#      url: https://github.com/mindcruiser/packages.git
-#      path: packages/in_app_purchase/in_app_purchase_platform_interface
-#      ref: v3.3.0+android
-
-#  in_app_purchase_storekit:
-#    git:
-#      url: https://github.com/mindcruiser/packages.git
-#      path: packages/in_app_purchase/in_app_purchase_storekit
-#      ref: v3.3.0+android
-     
   in_app_purchase_android:
-    path: ../in_app_purchase_android
+    git:
+      url: https://github.com/mindcruiser/packages.git
+      path: packages/in_app_purchase/in_app_purchase_android
+      ref: notta_fork_v3.2.3+1_android
   in_app_purchase_platform_interface:
-    path: ../in_app_purchase_platform_interface
+    git:
+      url: https://github.com/mindcruiser/packages.git
+      path: packages/in_app_purchase/in_app_purchase_platform_interface
+      ref: notta_fork_v3.2.3
   in_app_purchase_storekit:
-    path: ../in_app_purchase_storekit
+    git:
+      url: https://github.com/mindcruiser/packages.git
+      path: packages/in_app_purchase/in_app_purchase_storekit
+      ref: notta_fork_v3.2.3
 
 dev_dependencies:
   flutter_test:
