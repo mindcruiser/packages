@@ -103,15 +103,6 @@ void main() {
       }
     });
 
-    testWidgets('BillingClient.queryPurchaseHistory',
-        (WidgetTester tester) async {
-      try {
-        await billingClient.queryPurchaseHistory(ProductType.inapp);
-      } on MissingPluginException {
-        fail('Method channel is not setup correctly');
-      }
-    });
-
     testWidgets('BillingClient.queryPurchases', (WidgetTester tester) async {
       try {
         await billingClient.queryPurchases(ProductType.inapp);
