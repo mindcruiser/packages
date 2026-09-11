@@ -26,7 +26,8 @@ dependencies:
     git:
       url: https://github.com/mindcruiser/packages.git
       path: packages/in_app_purchase/in_app_purchase_android
-      ref: v0.5.0+1-in_app_purchase_android
+      # ref: v0.5.0+1-in_app_purchase_android
+      ref: notta_fork_v3.2.3+1_android
 #  in_app_purchase_platform_interface: ^1.4.0
   in_app_purchase_platform_interface:
     git:
